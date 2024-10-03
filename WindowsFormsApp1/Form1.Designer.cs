@@ -40,7 +40,7 @@
             // button1
             // 
             this.button1.BackColor = System.Drawing.SystemColors.AppWorkspace;
-            this.button1.Font = new System.Drawing.Font("Microsoft JhengHei UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.Location = new System.Drawing.Point(336, 22);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(141, 40);
@@ -68,7 +68,7 @@
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox1.Font = new System.Drawing.Font("Microsoft JhengHei UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox1.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox1.ForeColor = System.Drawing.SystemColors.WindowText;
             this.textBox1.Location = new System.Drawing.Point(520, 42);
             this.textBox1.Name = "textBox1";
@@ -80,7 +80,7 @@
             // button2
             // 
             this.button2.BackColor = System.Drawing.SystemColors.AppWorkspace;
-            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.Font = new System.Drawing.Font("Segoe UI Emoji", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button2.Location = new System.Drawing.Point(716, 59);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(110, 46);
