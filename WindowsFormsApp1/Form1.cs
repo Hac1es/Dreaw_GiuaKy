@@ -14,9 +14,7 @@ namespace WindowsFormsApp1
     {
 
         Pen pen;
-        Color color;
-        int pensize;
-        Boolean cursorMoving = false;
+        bool cursorMoving = false;
         int CursorX = -1;
         int CursorY = -1;
         Graphics graphic;
@@ -34,18 +32,14 @@ namespace WindowsFormsApp1
         {
             ColorDialog ChooseColor = new ColorDialog();
             ChooseColor.ShowDialog();
-            color = ChooseColor.Color;
+            Color color = ChooseColor.Color;
             pictureBox1.BackColor = color;
+            pen.Color = color;
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            pensize = comboBox1.SelectedIndex;
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            pen = new Pen(color, pensize);
+            pen.Width = comboBox1.SelectedIndex;
         }
 
         private void canvas_MouseDown(object sender, MouseEventArgs e)
