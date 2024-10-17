@@ -13,19 +13,24 @@ namespace WindowsFormsApp1
     public partial class Form1 : Form
     {
 
-        Pen pen;
+        Pen pen = new Pen(Color.Black, 2);
+        static Pen eraser = new Pen(Color.White, 20);
         bool cursorMoving = false;
         int CursorX = -1;
         int CursorY = -1;
         Graphics graphic;
+        Bitmap bitmap;
+        int index = 1;
         public Form1()
         {
             InitializeComponent();
-            pen = new Pen(Color.Black, 2);
-            graphic = canvas.CreateGraphics();
+            bitmap = new Bitmap(canvas.Width, canvas.Height);
+            graphic = Graphics.FromImage(bitmap);
             graphic.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            graphic.Clear(Color.White);
             pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
             pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+            canvas.Image = bitmap;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -42,33 +47,53 @@ namespace WindowsFormsApp1
             pen.Width = comboBox1.SelectedIndex;
         }
 
-        private void canvas_MouseDown(object sender, MouseEventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            comboBox1.SelectedIndex = 1;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (index == 2)
+                index = 1;
+            else
+                index = 2;
+        }
+
+        private void canvas_MouseDown_1(object sender, MouseEventArgs e)
         {
             cursorMoving = true;
             CursorX = e.X;
             CursorY = e.Y;
         }
 
-        private void canvas_MouseUp(object sender, MouseEventArgs e)
+        private void canvas_MouseUp_1(object sender, MouseEventArgs e)
         {
             cursorMoving = false;
             CursorX = -1;
             CursorY = -1;
         }
 
-        private void canvas_MouseMove(object sender, MouseEventArgs e)
+        private void canvas_MouseMove_1(object sender, MouseEventArgs e)
         {
             if (CursorX != -1 && CursorY != -1 && cursorMoving == true)
             {
-                graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
-                CursorX = e.X;
-                CursorY = e.Y;
+                switch (index)
+                {
+                    case 2:
+                        graphic.DrawLine(eraser, new Point(CursorX, CursorY), e.Location);
+                        CursorX = e.X;
+                        CursorY = e.Y;
+                        break;
+                    default:
+                        graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
+                        CursorX = e.X;
+                        CursorY = e.Y;
+                        break;
+                }
             }
-        }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            comboBox1.SelectedIndex = 1;
+            canvas.Invalidate();
         }
     }
 }
