@@ -82,15 +82,14 @@ namespace WindowsFormsApp1
                 {
                     case 2:
                         graphic.DrawLine(eraser, new Point(CursorX, CursorY), e.Location);
-                        CursorX = e.X;
-                        CursorY = e.Y;
                         break;
                     default:
                         graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
-                        CursorX = e.X;
-                        CursorY = e.Y;
                         break;
                 }
+
+                CursorX = e.X;
+                CursorY = e.Y;
             }
 
             canvas.Invalidate();
