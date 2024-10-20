@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,7 +13,7 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-
+        SocketClient client = new SocketClient();
         Pen pen = new Pen(Color.Black, 2);
         static Pen eraser = new Pen(Color.White, 20);
         bool cursorMoving = false;
@@ -31,6 +32,7 @@ namespace WindowsFormsApp1
             pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
             pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
             canvas.Image = bitmap;
+            Task recv = new Task(() => ReceiveData(client.Receive() as string));
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -78,6 +80,16 @@ namespace WindowsFormsApp1
         {
             if (CursorX != -1 && CursorY != -1 && cursorMoving == true)
             {
+                DrawingData patch = new DrawingData(
+                    CursorX, CursorY,
+                    e.X, e.Y,
+                    pen.Color,
+                    (int)pen.Width,
+                    index == 2 // True nếu dùng eraser
+                );
+
+                SendData(patch);
+
                 switch (index)
                 {
                     case 2:
@@ -92,6 +104,44 @@ namespace WindowsFormsApp1
                 CursorY = e.Y;
             }
 
+            canvas.Invalidate();
+        }
+
+        private void SendData(DrawingData patch)
+        {
+            string jsonData = JsonConvert.SerializeObject(patch);
+            byte[] data = Encoding.UTF8.GetBytes(jsonData + "<END>");  // Thêm <END> làm dấu kết thúc
+            if(!client.Send(data as object)) // Gửi lên server
+            {
+                int count = 0;
+                while (count <= 3)
+                {
+                    if (!client.Send(data as object)) count++;
+                }
+                if (count >= 3)
+                {
+                    MessageBox.Show("Ứng dụng đã gặp lỗi! Vui lòng khởi động lại!");
+                }
+                return;
+            }
+
+        }
+
+        private void ReceiveData(string jsonData)
+        {
+            DrawingData patch = JsonConvert.DeserializeObject<DrawingData>(jsonData);
+
+            Pen drawingPen;
+            if (patch.whatTool)
+            {
+                drawingPen = eraser;
+            }
+            else
+            {
+                drawingPen = new Pen(patch.penColor, patch.PenWidth);
+            }
+
+            graphic.DrawLine(drawingPen, new Point(patch.StartX, patch.StartY), new Point(patch.EndX, patch.EndY));
             canvas.Invalidate();
         }
     }
