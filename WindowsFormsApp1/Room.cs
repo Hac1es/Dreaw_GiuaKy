@@ -8,10 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net.NetworkInformation;
 
 namespace WindowsFormsApp1
 {
-    public partial class Form1 : Form
+    public partial class Room : Form
     {
         SocketClient client = new SocketClient();
         Pen pen = new Pen(Color.Black, 2);
@@ -22,7 +23,7 @@ namespace WindowsFormsApp1
         Graphics graphic;
         Bitmap bitmap;
         int index = 1;
-        public Form1()
+        public Room()
         {
             InitializeComponent();
             bitmap = new Bitmap(canvas.Width, canvas.Height);
@@ -32,7 +33,6 @@ namespace WindowsFormsApp1
             pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
             pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
             canvas.Image = bitmap;
-            Task recv = new Task(() => ReceiveData(client.Receive() as string));
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -52,6 +52,9 @@ namespace WindowsFormsApp1
         private void Form1_Load(object sender, EventArgs e)
         {
             comboBox1.SelectedIndex = 1;
+            urIP.Text = client.GetLocalIPv4(NetworkInterfaceType.Wireless80211);
+            if (urIP.Text == null)
+                urIP.Text = client.GetLocalIPv4(NetworkInterfaceType.Ethernet);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -109,21 +112,8 @@ namespace WindowsFormsApp1
 
         private void SendData(DrawingData patch)
         {
-            string jsonData = JsonConvert.SerializeObject(patch);
-            byte[] data = Encoding.UTF8.GetBytes(jsonData + "<END>");  // Thêm <END> làm dấu kết thúc
-            if(!client.Send(data as object)) // Gửi lên server
-            {
-                int count = 0;
-                while (count <= 3)
-                {
-                    if (!client.Send(data as object)) count++;
-                }
-                if (count >= 3)
-                {
-                    MessageBox.Show("Ứng dụng đã gặp lỗi! Vui lòng khởi động lại!");
-                }
-                return;
-            }
+            
+           
 
         }
 
@@ -144,5 +134,6 @@ namespace WindowsFormsApp1
             graphic.DrawLine(drawingPen, new Point(patch.StartX, patch.StartY), new Point(patch.EndX, patch.EndY));
             canvas.Invalidate();
         }
+
     }
 }

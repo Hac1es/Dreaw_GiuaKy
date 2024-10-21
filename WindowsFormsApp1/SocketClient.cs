@@ -14,15 +14,16 @@ namespace WindowsFormsApp1
 {
     internal class SocketClient
     {
-        #region Client
+        #region Properties
         Socket client;
         public string IP = "127.0.0.1";
         public int PORT = 9999;
         public const int BUFFER = 1024;
+        #endregion
         public bool ConnectServer()
         {
-        IPEndPoint iep = new IPEndPoint(IPAddress.Parse(IP), PORT);
-        client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint iep = new IPEndPoint(IPAddress.Parse(IP), PORT);
+            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             try
             {
@@ -35,27 +36,24 @@ namespace WindowsFormsApp1
                 return false;
             }
         }
-        #endregion
 
-        public bool Send(object data)
+        public bool Send(string data)
         {
-            byte[] sendData = SerializeData(data);
+            byte[] sendData = BytedData(data);
 
             return SendData(client, sendData);
         }
 
-        public object Receive()
+        public string Receive()
         {
             byte[] receiveData = new byte[BUFFER];
             bool isOk = ReceiveData(client, receiveData);
 
-            return DeserializeData(receiveData);
+            return DebytedData(receiveData);
         }
 
         private bool SendData(Socket target, byte[] data)
         {
-            if (target == null)
-                return false;
             return target.Send(data) == 1 ? true : false;
         }
 
@@ -64,37 +62,18 @@ namespace WindowsFormsApp1
         {
             return target.Receive(data) == 1 ? true : false;
         }
-        /// <summary>
-        /// Nén đối tượng thành mảng byte[]
-        /// </summary>
-        /// <param name="o"></param>
-        /// <returns></returns>
-        public byte[] SerializeData(Object o)
+
+        private byte[] BytedData(string chars)
         {
-            MemoryStream ms = new MemoryStream();
-            BinaryFormatter bf1 = new BinaryFormatter();
-            bf1.Serialize(ms, o);
-            return ms.ToArray();
+            return Encoding.UTF8.GetBytes(chars);
         }
 
-        /// <summary>
-        /// Giải nén mảng byte[] thành đối tượng object
-        /// </summary>
-        /// <param name="theByteArray"></param>
-        /// <returns></returns>
-        public object DeserializeData(byte[] theByteArray)
+
+        private string DebytedData(byte[] bytes)
         {
-            MemoryStream ms = new MemoryStream(theByteArray);
-            BinaryFormatter bf1 = new BinaryFormatter();
-            ms.Position = 0;
-            return bf1.Deserialize(ms);
+           return Encoding.UTF8.GetString(bytes);
         }
 
-        /// <summary>
-        /// Lấy ra IP V4 của card mạng đang dùng
-        /// </summary>
-        /// <param name="_type"></param>
-        /// <returns></returns>
         public string GetLocalIPv4(NetworkInterfaceType _type)
         {
             string output = "";
