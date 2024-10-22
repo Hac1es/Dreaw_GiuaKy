@@ -39,6 +39,10 @@ namespace Server
 
         private void HandleClient(Socket client)
         {
+            int recv; // Kích thước dữ liệu nhận được
+            byte[] data = new byte[1024]; // Bộ đệm dữ liệu
+            NetworkStream ns = new NetworkStream(client); // Tạo NetworkStream từ TcpClient
+            connection++; // Tăng số lượng kết nối hiện tại
         }
 
         private bool SendData(Socket target, byte[] data)
