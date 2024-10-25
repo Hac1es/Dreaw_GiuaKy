@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace WindowsFormsApp1
 {
@@ -20,58 +21,37 @@ namespace WindowsFormsApp1
         public int PORT = 9999;
         public const int BUFFER = 1024;
         #endregion
-        public bool ConnectServer()
+       
+        public async Task<bool> ConnectServer()
         {
             IPEndPoint iep = new IPEndPoint(IPAddress.Parse(IP), PORT);
             client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             try
             {
-                client.Connect(iep);
+                await client.ConnectAsync(iep);
                 return true;
             }
             catch
             {
-                MessageBox.Show("Kết nối thất bại!");
+                MessageBox.Show("Kết nối thất bại! Vui lòng kiểm tra kết nối của bạn!");
                 return false;
             }
         }
 
-        public bool Send(string data)
+        public async Task Send(string data)
         {
-            byte[] sendData = BytedData(data);
-
-            return SendData(client, sendData);
+            byte[] sendData = Encoding.UTF8.GetBytes(data);
+            await client.SendAsync(new ArraySegment<byte>(sendData), SocketFlags.None);
         }
 
-        public string Receive()
+        public async Task<string> Receive()
         {
             byte[] receiveData = new byte[BUFFER];
-            bool isOk = ReceiveData(client, receiveData);
-
-            return DebytedData(receiveData);
-        }
-
-        private bool SendData(Socket target, byte[] data)
-        {
-            return target.Send(data) == 1 ? true : false;
-        }
-
-
-        private bool ReceiveData(Socket target, byte[] data)
-        {
-            return target.Receive(data) == 1 ? true : false;
-        }
-
-        private byte[] BytedData(string chars)
-        {
-            return Encoding.UTF8.GetBytes(chars);
-        }
-
-
-        private string DebytedData(byte[] bytes)
-        {
-           return Encoding.UTF8.GetString(bytes);
+            int bytesRcv = await client.ReceiveAsync(new ArraySegment<byte>(receiveData), SocketFlags.None);
+            if (bytesRcv == 0)
+                return null;
+            return Encoding.UTF8.GetString(receiveData, 0, bytesRcv);
         }
 
         public string GetLocalIPv4(NetworkInterfaceType _type)

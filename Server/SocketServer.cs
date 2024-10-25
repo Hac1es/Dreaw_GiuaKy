@@ -12,56 +12,80 @@ namespace Server
     internal class ServerClass
     {
         #region Properties
-        TcpListener server;
-        string IP = "127.0.0.1";
-        int PORT = 9999;
-        public const int BUFFER = 1024;
-        static int connection = 0;
-        static List<TcpClient> clientList = new List<TcpClient> ();
+        TcpListener server; //nơi Server lắng nghe
+        int PORT = 9999; //số Port mặc định
+        public const int BUFFER = 1024; //kích thước bộ đệm dữ liệu mặc định
+        static int connection = 0; //số lượng kết nối
+        static List<Socket> clientList = new List<Socket>();//danh sách Client
         #endregion
 
-        public void CreateServer()
+        public ServerClass()
         {
-            server = new TcpListener(IPAddress.Any, PORT);
-            Thread serverThread = new Thread(() =>
+            server = new TcpListener(IPAddress.Any, PORT); //khởi tạo TcpListener
+            server.Start(); //bắt đầu lắng nghe
+            Console.WriteLine("Waiting for client...");
+            while (true)
             {
-                while (true)
-                {
-                    Socket socket = server.AcceptSocket();
-                    Thread clientThread = new Thread(() => HandleClient(socket));
-                    clientThread.IsBackground = true;
-                    clientThread.Start();
-                }    
-            });
-            serverThread.IsBackground = true;
-            serverThread.Start();
+                Socket client = server.AcceptSocket(); //Chấp nhận kết nối
+                //Tạo luổng riêng để xử lý Client
+                Thread handleClient = new Thread(() => HandleClient(client));
+                handleClient.Start();
+            }
+
         }
 
         private void HandleClient(Socket client)
         {
-            int recv; // Kích thước dữ liệu nhận được
-            byte[] data = new byte[1024]; // Bộ đệm dữ liệu
-            NetworkStream ns = new NetworkStream(client); // Tạo NetworkStream từ TcpClient
-            connection++; // Tăng số lượng kết nối hiện tại
-        }
-
-        private bool SendData(Socket target, byte[] data)
-        {
-            return target.Send(data) == 1 ? true : false;
-        }
-
-        private bool ReceiveData(Socket target, byte[] data)
-        {
-            return target.Receive(data) == 1 ? true : false;
-        }
-        private byte[] BytedData(string chars)
-        {
-            return Encoding.UTF8.GetBytes(chars);
-        }
-
-        private string DebytedData(byte[] bytes)
-        {
-            return Encoding.UTF8.GetString(bytes);
+            int recvWind; // kích thước dữ liệu nhận được
+            byte[] data; // bộ đệm dữ liệu
+            connection++; // tăng số lượng kết nối hiện tại
+            //Lấy thông tin client
+            IPEndPoint? client_in4 = client.RemoteEndPoint as IPEndPoint;
+            if (client_in4 != null) //nếu lấy được thông tin 
+            {
+                Console.WriteLine("New Dreawer {0}::{1} has connected!", client_in4.Address.ToString(), client_in4.Port);
+            }
+            else //nếu không lấy được
+            {
+                Console.WriteLine("Unable to retrieve client information.");
+            }
+            Console.WriteLine("Current status: {0} active connections", connection);
+            clientList.Add(client); //thêm Client mới kết nối vào danh sách
+            try //Vòng lặp gửi nhận dữ liệu
+            {
+                while (true)
+                {
+                    //Nhận dữ liệu
+                    data = new byte[BUFFER];
+                    recvWind = client.Receive(data);
+                    if (recvWind == 0) //Không data == ngắt kết nối? Tui cũng đéo hiểu:v
+                    {
+                        Console.WriteLine("A Dreawer has disconnected!");
+                        break;
+                    }
+                    //Gửi flood tới mọi node đang conn tới server
+                    foreach (Socket c in clientList)
+                        if (c != client && c.Connected == true)
+                        {
+                            c.Send(data, 0, recvWind, SocketFlags.None);
+                        }
+                        else 
+                            continue;
+                }
+            }
+            catch (SocketException) //Exception khi đang gửi/nhận mà client socket ngắt kết nối đột ngột
+            {
+                //Do nothing
+            }
+            finally //Giải phóng tài nguyên
+            {
+                //Ngắt kết nối với client
+                client.Close();
+                clientList.Remove(client);
+                connection--; // giảm số lượng conn
+                Console.WriteLine("A Dreawer has disconnected!");
+                Console.WriteLine("Current status: {0} active connections", connection);
+            }
         }
     }
 }

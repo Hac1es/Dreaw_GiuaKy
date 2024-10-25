@@ -10,24 +10,33 @@ namespace WindowsFormsApp1
 {
     internal class DrawingData
     {
-        public int StartX { get; set; }  // Tọa độ bắt đầu
-        public int StartY { get; set; }  // Tọa độ kết thúc
-        public int EndX { get; set; }    // Tọa độ kết thúc
-        public int EndY { get; set; }    // Tọa độ kết thúc
-        public Color penColor { get; set; }  // Màu bút vẽ
-        public int PenWidth { get; set; }  // Độ rộng của bút vẽ
-        public bool whatTool { get; set; }   // Loại công cụ (ví dụ: pen, eraser)
-
-        // Hàm constructor
-        public DrawingData(int startX, int startY, int endX, int endY, Color color, int penWidth, bool tool)
+        public int? X { get; set; } 
+        public int? Y { get; set; }
+        public float? lineWidth { get; set; }
+        [JsonIgnore]
+        public Color? color { get; set; }
+        public string ColorHex // Thuộc tính này sẽ chuyển đổi Color thành chuỗi Hex
         {
-            StartX = startX;
-            StartY = startY;
-            EndX = endX;
-            EndY = endY;
-            penColor = color;
-            PenWidth = penWidth;
-            whatTool = tool;
+            get => color.HasValue ? $"#{color.Value.ToArgb():X8}" : null;
+            set => color = value != null ? ColorTranslator.FromHtml(value) : (Color?)null;
+        }
+        public DrawingCommand Event { get; set; }
+
+        public DrawingData(int? x, int? y, float? width, Color? coloR, DrawingCommand evenT)
+        {
+            X = x;
+            Y = y;
+            lineWidth = width;
+            color = coloR;
+            Event = evenT;  
         }
     }
+
+    public enum DrawingCommand
+    {
+        BEGIN,
+        DRAW,
+        STOP
+    }
+
 }

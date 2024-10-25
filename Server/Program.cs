@@ -12,9 +12,11 @@ namespace Server
     {
         static void Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("Server listening...");
+            Console.WriteLine("Ứng dụng vẽ chung qua mạng - Dreaw");
             Console.ResetColor();
+            ServerClass Dreaw_Server = new ServerClass();
         }
     }
 }

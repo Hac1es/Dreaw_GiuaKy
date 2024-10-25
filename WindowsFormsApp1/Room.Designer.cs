@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Room));
             this.button1 = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -36,8 +37,15 @@
             this.canvas = new System.Windows.Forms.PictureBox();
             this.urIP = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.strongSignal = new System.Windows.Forms.PictureBox();
+            this.moderateSignal = new System.Windows.Forms.PictureBox();
+            this.weakSignal = new System.Windows.Forms.PictureBox();
+            this.urPing = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.canvas)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.strongSignal)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.moderateSignal)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.weakSignal)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -118,7 +126,7 @@
             this.urIP.BackColor = System.Drawing.SystemColors.Control;
             this.urIP.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.urIP.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.urIP.Location = new System.Drawing.Point(659, 50);
+            this.urIP.Location = new System.Drawing.Point(659, 29);
             this.urIP.Name = "urIP";
             this.urIP.Size = new System.Drawing.Size(178, 23);
             this.urIP.TabIndex = 8;
@@ -127,18 +135,62 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(580, 50);
+            this.label2.Location = new System.Drawing.Point(580, 29);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(73, 23);
             this.label2.TabIndex = 9;
             this.label2.Text = "Your IP: ";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // Form1
+            // strongSignal
+            // 
+            this.strongSignal.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("strongSignal.BackgroundImage")));
+            this.strongSignal.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.strongSignal.Location = new System.Drawing.Point(581, 68);
+            this.strongSignal.Name = "strongSignal";
+            this.strongSignal.Size = new System.Drawing.Size(44, 35);
+            this.strongSignal.TabIndex = 10;
+            this.strongSignal.TabStop = false;
+            // 
+            // moderateSignal
+            // 
+            this.moderateSignal.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("moderateSignal.BackgroundImage")));
+            this.moderateSignal.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.moderateSignal.Location = new System.Drawing.Point(581, 67);
+            this.moderateSignal.Name = "moderateSignal";
+            this.moderateSignal.Size = new System.Drawing.Size(44, 35);
+            this.moderateSignal.TabIndex = 11;
+            this.moderateSignal.TabStop = false;
+            // 
+            // weakSignal
+            // 
+            this.weakSignal.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("weakSignal.BackgroundImage")));
+            this.weakSignal.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.weakSignal.Location = new System.Drawing.Point(581, 68);
+            this.weakSignal.Name = "weakSignal";
+            this.weakSignal.Size = new System.Drawing.Size(44, 35);
+            this.weakSignal.TabIndex = 12;
+            this.weakSignal.TabStop = false;
+            // 
+            // urPing
+            // 
+            this.urPing.BackColor = System.Drawing.SystemColors.Control;
+            this.urPing.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.urPing.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.urPing.Location = new System.Drawing.Point(644, 72);
+            this.urPing.Name = "urPing";
+            this.urPing.Size = new System.Drawing.Size(178, 23);
+            this.urPing.TabIndex = 13;
+            // 
+            // Room
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(849, 481);
+            this.Controls.Add(this.urPing);
+            this.Controls.Add(this.weakSignal);
+            this.Controls.Add(this.moderateSignal);
+            this.Controls.Add(this.strongSignal);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.urIP);
             this.Controls.Add(this.canvas);
@@ -147,11 +199,14 @@
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.button1);
-            this.Name = "Form1";
+            this.Name = "Room";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.canvas)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.strongSignal)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.moderateSignal)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.weakSignal)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -167,6 +222,10 @@
         private System.Windows.Forms.PictureBox canvas;
         private System.Windows.Forms.TextBox urIP;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.PictureBox strongSignal;
+        private System.Windows.Forms.PictureBox moderateSignal;
+        private System.Windows.Forms.PictureBox weakSignal;
+        private System.Windows.Forms.TextBox urPing;
     }
 }
 
