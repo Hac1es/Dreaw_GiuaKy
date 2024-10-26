@@ -23,6 +23,9 @@ namespace WindowsFormsApp1
         bool cursorMoving = false; //Check xem chuột có đang di chuyển không
         int CursorX = -1; //Tọa độ X con trỏ chuột
         int CursorY = -1; //Tọa độ Y con trỏ chuột
+        int rcv_cursorX = -1;
+        int rcv_cursorY = -1;
+        bool rcv_cursorMV = false;
         int index = 1; //Bút hay gôm, mặc định là bút
         Graphics graphic; //Bảng vẽ
         #endregion
@@ -219,23 +222,24 @@ namespace WindowsFormsApp1
             switch ((int)data.Event)
                 {
                 case 0:
-                    cursorMoving = true;
-                    CursorX = (int)data.X;
-                    CursorY = (int)data.Y;
+                    rcv_cursorMV = true;
+                    rcv_cursorX = (int)data.X;
+                    rcv_cursorY = (int)data.Y;
                     break;
                 case 1:
-                    if (CursorX != -1 && CursorY != -1 && cursorMoving == true)
+                    if (rcv_cursorX != -1 && rcv_cursorY != -1 && rcv_cursorMV == true)
                     {
-                        graphic.DrawLine(pen, new Point(CursorX, CursorY), new Point((int)data.X, (int)data.Y));
-                        CursorX = (int)data.X;
-                        CursorY = (int)data.Y;
+                        using (Pen rcvPen = new Pen((Color)data.color, (float)data.lineWidth))
+                        graphic.DrawLine(rcvPen, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
+                        rcv_cursorX = (int)data.X;
+                        rcv_cursorY = (int)data.Y;
                         canvas.Invalidate();
                     }
                     break;
                 default:
-                    cursorMoving = false;
-                    CursorX = -1;
-                    CursorY = -1;
+                    rcv_cursorMV = false;
+                    rcv_cursorX = -1;
+                    rcv_cursorY = -1;
                     break;
                 }
         }
