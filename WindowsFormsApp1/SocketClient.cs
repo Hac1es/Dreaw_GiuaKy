@@ -16,13 +16,14 @@ namespace WindowsFormsApp1
     internal class SocketClient
     {
         #region Properties
-        Socket client;
+        Socket client; //Socket của Client
+        //Thông tin Server
         public string IP = "127.0.0.1";
         public int PORT = 9999;
-        public const int BUFFER = 1024;
+        public const int BUFFER = 1024; //Bộ đệm
         #endregion
        
-        public async Task<bool> ConnectServer()
+        public async Task<bool> ConnectServer() //Kết nối tới server
         {
             IPEndPoint iep = new IPEndPoint(IPAddress.Parse(IP), PORT);
             client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -39,22 +40,23 @@ namespace WindowsFormsApp1
             }
         }
 
-        public async Task Send(string data)
+        public async Task Send(string data) //Gửi data đi
         {
             byte[] sendData = Encoding.UTF8.GetBytes(data);
             await client.SendAsync(new ArraySegment<byte>(sendData), SocketFlags.None);
         }
 
-        public async Task<string> Receive()
+        public async Task<string> Receive() //Nhận data
         {
             byte[] receiveData = new byte[BUFFER];
-            int bytesRcv = await client.ReceiveAsync(new ArraySegment<byte>(receiveData), SocketFlags.None);
+            int bytesRcv 
+                = await client.ReceiveAsync(new ArraySegment<byte>(receiveData), SocketFlags.None);
             if (bytesRcv == 0)
                 return null;
             return Encoding.UTF8.GetString(receiveData, 0, bytesRcv);
         }
 
-        public string GetLocalIPv4(NetworkInterfaceType _type)
+        public string GetLocalIPv4(NetworkInterfaceType _type) //Lấy ra địa chỉ IPv4
         {
             string output = "";
             foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())
