@@ -90,7 +90,8 @@ namespace WindowsFormsApp1
             cursorMoving = true;
             CursorX = e.X;
             CursorY = e.Y;
-            BeginDrawing(e.X, e.Y);
+            var Data = new DrawingData(e.X, e.Y, null, null, DrawingCommand.BEGIN);
+            SendData(Data);
         }
 
         private void canvas_MouseUp_1(object sender, MouseEventArgs e)
@@ -98,15 +99,27 @@ namespace WindowsFormsApp1
             cursorMoving = false;
             CursorX = -1;
             CursorY = -1;
-            StopDrawing();
+            var Data = new DrawingData(null, null, null, null, DrawingCommand.STOP);
+            SendData(Data);
         }
 
         private void canvas_MouseMove_1(object sender, MouseEventArgs e)
         {
             if (CursorX != -1 && CursorY != -1 && cursorMoving == true)
             {
-                graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
-                Drawing(e.X, e.Y, (int)pen.Width, pen.Color);
+                switch(index)
+                {
+                    case 1:
+                        graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
+                        var drawData = new DrawingData(e.X, e.Y, pen.Width, pen.Color, DrawingCommand.DRAW);
+                        SendData(drawData);
+                        break;
+                    default:
+                        graphic.DrawLine(eraser, new Point(CursorX, CursorY), e.Location);
+                        var eraserData = new DrawingData(e.X, e.Y, null, null, DrawingCommand.ERASER);
+                        SendData(eraserData);
+                        break;
+                }
                 CursorX = e.X;
                 CursorY = e.Y;
                 canvas.Invalidate();
@@ -156,26 +169,6 @@ namespace WindowsFormsApp1
                 }    
                 await Task.Delay(10000);
             }    
-        }
-
-        private void BeginDrawing(int cursor_x, int cursor_y)
-        {
-            cursorMoving = true;
-            var Data = new DrawingData(cursor_x, cursor_y, null, null, DrawingCommand.BEGIN);
-            SendData(Data);
-        }
-
-        private void StopDrawing()
-        {
-            cursorMoving = false;
-            var Data = new DrawingData(null, null, null, null, DrawingCommand.STOP);
-            SendData(Data);
-        }
-
-        private void Drawing(int cursor_x, int cursor_y, int widtH, Color coloR)
-        {
-            var Data = new DrawingData(cursor_x, cursor_y, widtH, coloR, DrawingCommand.DRAW);
-            SendData(Data);
         }
 
         private void Listen()
@@ -231,6 +224,15 @@ namespace WindowsFormsApp1
                     {
                         using (Pen rcvPen = new Pen((Color)data.color, (float)data.lineWidth))
                         graphic.DrawLine(rcvPen, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
+                        rcv_cursorX = (int)data.X;
+                        rcv_cursorY = (int)data.Y;
+                        canvas.Invalidate();
+                    }
+                    break;
+                case 2:
+                    if (rcv_cursorX != -1 && rcv_cursorY != -1 && rcv_cursorMV == true)
+                    {
+                        graphic.DrawLine(eraser, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
                         rcv_cursorX = (int)data.X;
                         rcv_cursorY = (int)data.Y;
                         canvas.Invalidate();

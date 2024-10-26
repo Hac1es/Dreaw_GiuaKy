@@ -36,6 +36,7 @@ namespace WindowsFormsApp1
     {
         BEGIN,
         DRAW,
+        ERASER,
         STOP
     }
 
