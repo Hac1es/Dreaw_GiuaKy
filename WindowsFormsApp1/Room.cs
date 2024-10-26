@@ -17,16 +17,16 @@ namespace WindowsFormsApp1
     public partial class Room : Form
     {
         #region Properties
-        SocketClient client; 
+        SocketClient client; //socket
         Pen pen = new Pen(Color.Black, 2); //Bút vẽ
         static Pen eraser = new Pen(Color.White, 20); //Gôm
-        bool cursorMoving = false; //Check xem chuột có đang di chuyển không
+        bool cursorMoving = false; //Chuột đang di chuyển? true:false;
         int CursorX = -1; //Tọa độ X con trỏ chuột
         int CursorY = -1; //Tọa độ Y con trỏ chuột
-        int rcv_cursorX = -1;
-        int rcv_cursorY = -1;
+        int rcv_cursorX = -1; //Tọa độ X nhận được
+        int rcv_cursorY = -1; //Tọa độ Y nhận được
         bool rcv_cursorMV = false;
-        int index = 1; //Bút hay gôm, mặc định là bút
+        int index = 1; //Bút hay gôm, bút == 1, gôm == 2
         Graphics graphic; //Bảng vẽ
         #endregion
         public Room()
@@ -40,7 +40,7 @@ namespace WindowsFormsApp1
             ping_pong.Start();      
         }
 
-        private void InitializeCanvas()
+        private void InitializeCanvas() //Tạo bảng vẽ
         {
             Bitmap bitmap = new Bitmap(canvas.Width, canvas.Height);
             graphic = Graphics.FromImage(bitmap);
@@ -51,7 +51,7 @@ namespace WindowsFormsApp1
             canvas.Image = bitmap;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e) //Chọn màu
         {
             ColorDialog ChooseColor = new ColorDialog();
             ChooseColor.ShowDialog();
@@ -60,24 +60,26 @@ namespace WindowsFormsApp1
             pen.Color = color;
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)// Chọn độ dày bút
         {
             pen.Width = comboBox1.SelectedIndex;
         }
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            bool connStatus = await client.ConnectServer();
+            bool connStatus = await client.ConnectServer(); //Đợi conn tới Server
             if (!connStatus)
-                this.Close();
-            comboBox1.SelectedIndex = 1;
-            urIP.Text = client.GetLocalIPv4(NetworkInterfaceType.Wireless80211);
-            if (urIP.Text == null)
-                urIP.Text = client.GetLocalIPv4(NetworkInterfaceType.Ethernet);
-            Listen();
+                this.Close(); //Connect không được thì đóng app
+            comboBox1.SelectedIndex = 1; //Cỡ bút vẽ mặc định = 2
+            urIP.Text = 
+                client.GetLocalIPv4(NetworkInterfaceType.Wireless80211); //Thử lấy địa chỉ IP Wi-Fi
+            if (urIP.Text == null) //Không được thì
+                urIP.Text 
+                    = client.GetLocalIPv4(NetworkInterfaceType.Ethernet); //Lấy địa chỉ IP Ethernet
+            Listen(); //Lắng nghe chỉ thị từ Server
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e) //Chuyển giữa gôm và bút
         {
             if (index == 2)
                 index = 1;
@@ -85,12 +87,28 @@ namespace WindowsFormsApp1
                 index = 2;
         }
 
+
+        /* 
+        Logic vẽ:
+        -Khi ấn chuột vào bảng vẽ(MouseDown):
+            +Tọa độ chuột được nạp vào cursorX, cursorY
+            +Tọa độ chuột được gửi lên Server kèm chỉ thị BEGIN
+        -Khi di chuột (MouseMove)
+            +Mỗi một nét bút, vẽ một nét thẳng từ (cursorX, cursorY) tới vị trí 
+        trỏ chuột -> nạp vị trí con trỏ vào cursorX, cursorY -> Cứ lặp lại như vậy
+            +Mỗi một vòng lặp như vậy, dữ liệu vẽ(tọa độ, độ dày nét, màu vẽ) sẽ được đóng gói và gửi lên server kèm chỉ thị
+        DRAW/ERASER
+        -Khi thả chuột (MouseUp)
+            +cursorX, cursorY đặt về -1, cursorMoving đặt về false
+            +Chỉ thị STOP được gửi lên Server
+        */
         private void canvas_MouseDown_1(object sender, MouseEventArgs e)
         {
             cursorMoving = true;
             CursorX = e.X;
             CursorY = e.Y;
-            BeginDrawing(e.X, e.Y);
+            var Data = new DrawingData(e.X, e.Y, null, null, DrawingCommand.BEGIN);
+            SendData(Data);
         }
 
         private void canvas_MouseUp_1(object sender, MouseEventArgs e)
@@ -98,29 +116,41 @@ namespace WindowsFormsApp1
             cursorMoving = false;
             CursorX = -1;
             CursorY = -1;
-            StopDrawing();
+            var Data = new DrawingData(null, null, null, null, DrawingCommand.STOP);
+            SendData(Data);
         }
 
         private void canvas_MouseMove_1(object sender, MouseEventArgs e)
         {
             if (CursorX != -1 && CursorY != -1 && cursorMoving == true)
             {
-                graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
-                Drawing(e.X, e.Y, (int)pen.Width, pen.Color);
+                switch(index)
+                {
+                    case 1:
+                        graphic.DrawLine(pen, new Point(CursorX, CursorY), e.Location);
+                        var drawData = new DrawingData(e.X, e.Y, pen.Width, pen.Color, DrawingCommand.DRAW);
+                        SendData(drawData);
+                        break;
+                    default:
+                        graphic.DrawLine(eraser, new Point(CursorX, CursorY), e.Location);
+                        var eraserData = new DrawingData(e.X, e.Y, null, null, DrawingCommand.ERASER);
+                        SendData(eraserData);
+                        break;
+                }
                 CursorX = e.X;
                 CursorY = e.Y;
                 canvas.Invalidate();
             }
         }
 
-        private async void SendData(DrawingData data)
+        private async void SendData(DrawingData data) //Đóng gói dữ liệu vẽ thành dạng JSON
         {
             string jsondilla = JsonConvert.SerializeObject(data);
-            jsondilla += "\n";
+            jsondilla += "\n"; //Phân tách từng gói dữ liệu vẽ một
             await client.Send(jsondilla);
         }
 
-        private long GetPing(IPAddress ip)
+        private long GetPing(IPAddress ip) //Lấy ping tới Server
         {
             
             Ping ping = new Ping();
@@ -158,27 +188,7 @@ namespace WindowsFormsApp1
             }    
         }
 
-        private void BeginDrawing(int cursor_x, int cursor_y)
-        {
-            cursorMoving = true;
-            var Data = new DrawingData(cursor_x, cursor_y, null, null, DrawingCommand.BEGIN);
-            SendData(Data);
-        }
-
-        private void StopDrawing()
-        {
-            cursorMoving = false;
-            var Data = new DrawingData(null, null, null, null, DrawingCommand.STOP);
-            SendData(Data);
-        }
-
-        private void Drawing(int cursor_x, int cursor_y, int widtH, Color coloR)
-        {
-            var Data = new DrawingData(cursor_x, cursor_y, widtH, coloR, DrawingCommand.DRAW);
-            SendData(Data);
-        }
-
-        private void Listen()
+        private void Listen() //Lắng nghe dữ liệu từ Server
         {
             Task listenThread = new Task(async () =>
             {
@@ -198,15 +208,8 @@ namespace WindowsFormsApp1
                         // Xử lý từng JSON riêng lẻ
                         foreach (var jsonObject in jsonObjects)
                         {
-                            try
-                            {
-                                DrawingData data = JsonConvert.DeserializeObject<DrawingData>(jsonObject);
-                                ProcessData(data);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Error deserializing JSON: " + ex.Message);
-                            }
+                            DrawingData data = JsonConvert.DeserializeObject<DrawingData>(jsonObject);
+                            ProcessData(data);
                         }
 
                         // Xóa dữ liệu đã xử lý khỏi bộ đệm
@@ -217,7 +220,15 @@ namespace WindowsFormsApp1
             listenThread.Start();
         }
 
-        private void ProcessData(DrawingData data)
+        private void ProcessData(DrawingData data) 
+        /*
+        Logic xử lý dữ liệu vẽ:
+        -Thêm các biến rcv_cursorMV, rcv_cursorX, rcv_cursorY để tránh chồng lấp dữ liệu
+        -Lệnh BEGIN: Truyền điểm bắt đầu vào rcv_cursorX, rcv_cursorY, đặt rcv_cursorMV = true để
+        bắt đầu vẽ
+        -Lệnh DRAW/ERASER: Vẽ theo Logic nối tiếp nhau như trên
+        -Lệnh STOP: Đặt rcv_cursorX, rcv_cursorY thành -1. đặt rcv_cursorMV = false để dừng vẽ
+        */ 
         {
             switch ((int)data.Event)
                 {
@@ -231,6 +242,15 @@ namespace WindowsFormsApp1
                     {
                         using (Pen rcvPen = new Pen((Color)data.color, (float)data.lineWidth))
                         graphic.DrawLine(rcvPen, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
+                        rcv_cursorX = (int)data.X;
+                        rcv_cursorY = (int)data.Y;
+                        canvas.Invalidate();
+                    }
+                    break;
+                case 2:
+                    if (rcv_cursorX != -1 && rcv_cursorY != -1 && rcv_cursorMV == true)
+                    {
+                        graphic.DrawLine(eraser, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
                         rcv_cursorX = (int)data.X;
                         rcv_cursorY = (int)data.Y;
                         canvas.Invalidate();
