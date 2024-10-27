@@ -152,7 +152,6 @@ namespace WindowsFormsApp1
 
         private long GetPing(IPAddress ip) //Lấy ping tới Server
         {
-            
             Ping ping = new Ping();
             PingReply reply = ping.Send(ip);
             if (reply.Status == IPStatus.Success)
@@ -184,7 +183,7 @@ namespace WindowsFormsApp1
                     moderateSignal.Visible = false;
                     strongSignal.Visible = false;
                 }    
-                await Task.Delay(10000);
+                await Task.Delay(800);
             }    
         }
 
@@ -241,7 +240,7 @@ namespace WindowsFormsApp1
                     if (rcv_cursorX != -1 && rcv_cursorY != -1 && rcv_cursorMV == true)
                     {
                         using (Pen rcvPen = new Pen((Color)data.color, (float)data.lineWidth))
-                        graphic.DrawLine(rcvPen, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
+                            graphic.DrawLine(rcvPen, new Point(rcv_cursorX, rcv_cursorY), new Point((int)data.X, (int)data.Y));
                         rcv_cursorX = (int)data.X;
                         rcv_cursorY = (int)data.Y;
                         canvas.Invalidate();

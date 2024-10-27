@@ -58,7 +58,7 @@ namespace Server
                     //Nhận dữ liệu
                     data = new byte[BUFFER];
                     recvWind = client.Receive(data);
-                    if (recvWind == 0) //Không data == ngắt kết nối? Tui cũng đéo hiểu:v
+                    if (recvWind == 0) //Không data == ngắt kết nối?
                     {
                         Console.WriteLine("A Dreawer has disconnected!");
                         break;
