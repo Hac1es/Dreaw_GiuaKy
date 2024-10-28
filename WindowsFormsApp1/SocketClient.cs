@@ -18,9 +18,9 @@ namespace WindowsFormsApp1
         #region Properties
         Socket client; //Socket của Client
         //Thông tin Server
-        public string IP = "127.0.0.1";
+        public string IP = "192.168.43.212";
         public int PORT = 9999;
-        public const int BUFFER = 1024; //Bộ đệm
+        public const int BUFFER = 2048; //Bộ đệm
         #endregion
        
         public async Task<bool> ConnectServer() //Kết nối tới server

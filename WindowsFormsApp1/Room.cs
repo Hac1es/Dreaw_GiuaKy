@@ -171,7 +171,7 @@ namespace WindowsFormsApp1
                     moderateSignal.Visible = false;
                     strongSignal.Visible = true;
                 }
-                else if (pinG <= 150)
+                else if (40 < pinG && pinG <= 150)
                 {
                     weakSignal.Visible = false;
                     moderateSignal.Visible = true;
