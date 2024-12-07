@@ -10,50 +10,27 @@ using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 
 namespace WindowsFormsApp1
 {
     internal class SocketClient
     {
         #region Properties
-        Socket client; //Socket của Client
-        //Thông tin Server
-        public string IP = "127.0.0.1";
-        public int PORT = 9999;
-        public const int BUFFER = 1024; //Bộ đệm
+        HubConnection _conn;
+        string serverAdd = "https://localhost:7183/hub";
         #endregion
-       
-        public async Task<bool> ConnectServer() //Kết nối tới server
-        {
-            IPEndPoint iep = new IPEndPoint(IPAddress.Parse(IP), PORT);
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            try
-            {
-                await client.ConnectAsync(iep);
-                return true;
-            }
-            catch
-            {
-                MessageBox.Show("Kết nối thất bại! Vui lòng kiểm tra kết nối của bạn!");
-                return false;
-            }
+        public async void ConnectServer() //Kết nối tới server
+        {
+            _conn = new HubConnectionBuilder().WithUrl(serverAdd).Build();
+            await _conn.StartAsync();
         }
 
         public async Task Send(string data) //Gửi data đi
         {
-            byte[] sendData = Encoding.UTF8.GetBytes(data);
-            await client.SendAsync(new ArraySegment<byte>(sendData), SocketFlags.None);
-        }
-
-        public async Task<string> Receive() //Nhận data
-        {
-            byte[] receiveData = new byte[BUFFER];
-            int bytesRcv 
-                = await client.ReceiveAsync(new ArraySegment<byte>(receiveData), SocketFlags.None);
-            if (bytesRcv == 0)
-                return null;
-            return Encoding.UTF8.GetString(receiveData, 0, bytesRcv);
+            await _conn.InvokeAsync("SendFlood", data);
         }
 
         public string GetLocalIPv4(NetworkInterfaceType _type) //Lấy ra địa chỉ IPv4
@@ -73,6 +50,43 @@ namespace WindowsFormsApp1
                 }
             }
             return output;
+        }
+
+        public void Listen(Action<DrawingData> ProcessData) //Lắng nghe dữ liệu từ Server
+        {
+            StringBuilder jsonBuffer = new StringBuilder(); // Bộ đệm để lưu trữ JSON nhận được
+            _conn.On<string>("ReceiveData", (jsondata) =>
+            {
+                // Thêm dữ liệu mới vào bộ đệm
+                jsonBuffer.Append(jsondata);
+
+                // Tách các JSON bằng cách tìm ký tự newline
+                string[] jsonObjects = jsonBuffer.ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Xử lý từng JSON riêng lẻ
+                foreach (var jsonObject in jsonObjects)
+                {
+                    try
+                    {
+                        DrawingData data = JsonConvert.DeserializeObject<DrawingData>(jsonObject);
+                        if (data != null)
+                        {
+                            ProcessData(data);
+                        }
+                    }
+                    catch (JsonException ex)
+                    {
+                        Console.WriteLine($"JSON Parsing Error: {ex.Message}");
+                    }
+                }
+
+                // Xóa phần đã xử lý khỏi bộ đệm
+                int lastNewlineIndex = jsonBuffer.ToString().LastIndexOf('\n');
+                if (lastNewlineIndex != -1)
+                {
+                    jsonBuffer.Remove(0, lastNewlineIndex + 1);
+                }
+            });
         }
     }
 }

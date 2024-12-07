@@ -65,18 +65,16 @@ namespace WindowsFormsApp1
             pen.Width = comboBox1.SelectedIndex;
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            bool connStatus = await client.ConnectServer(); //Đợi conn tới Server
-            if (!connStatus)
-                this.Close(); //Connect không được thì đóng app
+            client.ConnectServer(); //Đợi conn tới Server
             comboBox1.SelectedIndex = 1; //Cỡ bút vẽ mặc định = 2
             urIP.Text = 
                 client.GetLocalIPv4(NetworkInterfaceType.Wireless80211); //Thử lấy địa chỉ IP Wi-Fi
             if (urIP.Text == null) //Không được thì
                 urIP.Text 
                     = client.GetLocalIPv4(NetworkInterfaceType.Ethernet); //Lấy địa chỉ IP Ethernet
-            Listen(); //Lắng nghe chỉ thị từ Server
+            client.Listen(ProcessData); //Lắng nghe chỉ thị từ Server
         }
 
         private void button2_Click(object sender, EventArgs e) //Chuyển giữa gôm và bút
@@ -163,7 +161,7 @@ namespace WindowsFormsApp1
         {
             while (true)
             {
-                long pinG = GetPing(IPAddress.Parse(client.IP));
+                long pinG = GetPing(IPAddress.Parse("127.0.0.1"));
                 urPing.Text = pinG.ToString() + " ms";
                 if (0 <= pinG && pinG <= 40)
                 {
@@ -185,38 +183,6 @@ namespace WindowsFormsApp1
                 }    
                 await Task.Delay(800);
             }    
-        }
-
-        private void Listen() //Lắng nghe dữ liệu từ Server
-        {
-            Task listenThread = new Task(async () =>
-            {
-                while (true)
-                {
-                    StringBuilder jsonBuffer = new StringBuilder(); // Bộ đệm để lưu trữ JSON nhận được
-                    while (true)
-                    {
-                        string jsondata = await client.Receive();
-
-                        // Thêm dữ liệu mới vào bộ đệm
-                        jsonBuffer.Append(jsondata);
-
-                        // Tách các JSON bằng cách tìm ký tự newline
-                        string[] jsonObjects = jsonBuffer.ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                        // Xử lý từng JSON riêng lẻ
-                        foreach (var jsonObject in jsonObjects)
-                        {
-                            DrawingData data = JsonConvert.DeserializeObject<DrawingData>(jsonObject);
-                            ProcessData(data);
-                        }
-
-                        // Xóa dữ liệu đã xử lý khỏi bộ đệm
-                        jsonBuffer.Clear();
-                    }
-                } 
-            });
-            listenThread.Start();
         }
 
         private void ProcessData(DrawingData data) 
